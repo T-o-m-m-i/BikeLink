@@ -1,0 +1,400 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:MyLib
+LIBS:LoRa-BikeLink-RX-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L GND #PWR01
+U 1 1 58AEC2DE
+P 7600 4350
+F 0 "#PWR01" H 7600 4100 50  0001 C CNN
+F 1 "GND" H 7600 4200 50  0000 C CNN
+F 2 "" H 7600 4350 50  0000 C CNN
+F 3 "" H 7600 4350 50  0000 C CNN
+	1    7600 4350
+	1    0    0    -1  
+$EndComp
+Text Label 7050 3350 0    60   ~ 0
+Lora_MISO
+Text Label 5450 5200 0    60   ~ 0
+Lora_MOSI
+Text Label 5450 5100 0    60   ~ 0
+Lora_MISO
+Text Label 5450 5000 0    60   ~ 0
+Lora_SCK
+Text Label 7050 3450 0    60   ~ 0
+Lora_MOSI
+Text Label 7050 3550 0    60   ~ 0
+Lora_SCK
+Text Label 7050 3750 0    60   ~ 0
+Lora_RESET
+$Comp
+L CONN_01X02 P1
+U 1 1 58AED1B7
+P 9300 4000
+F 0 "P1" H 9300 4150 50  0000 C CNN
+F 1 "CONN_01X02" V 9400 4000 50  0000 C CNN
+F 2 "MyLib:SMA_EDGE" H 9300 4000 50  0001 C CNN
+F 3 "" H 9300 4000 50  0000 C CNN
+	1    9300 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR02
+U 1 1 58AF049E
+P 3500 6100
+F 0 "#PWR02" H 3500 5850 50  0001 C CNN
+F 1 "GND" H 3500 5950 50  0000 C CNN
+F 2 "" H 3500 6100 50  0000 C CNN
+F 3 "" H 3500 6100 50  0000 C CNN
+	1    3500 6100
+	1    0    0    -1  
+$EndComp
+Text Label 750  1100 0    60   ~ 0
+BATT_IN
+Text Label 5450 4500 0    60   ~ 0
+PWR_OUT
+$Comp
+L CONN_01X02 P3
+U 1 1 58AF2934
+P 1700 1150
+F 0 "P3" H 1700 1300 50  0000 C CNN
+F 1 "CONN_01X02" V 1800 1150 50  0000 C CNN
+F 2 "Connectors:PINHEAD1-2" H 1700 1150 50  0001 C CNN
+F 3 "" H 1700 1150 50  0000 C CNN
+	1    1700 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR03
+U 1 1 58AF2B7B
+P 1150 1350
+F 0 "#PWR03" H 1150 1100 50  0001 C CNN
+F 1 "GND" H 1150 1200 50  0000 C CNN
+F 2 "" H 1150 1350 50  0000 C CNN
+F 3 "" H 1150 1350 50  0000 C CNN
+	1    1150 1350
+	1    0    0    -1  
+$EndComp
+Text Label 9850 3050 0    60   ~ 0
+PWR_OUT
+NoConn ~ 8750 3250
+NoConn ~ 4950 5950
+NoConn ~ 5100 5950
+Text Label 5450 4900 0    60   ~ 0
+ADC_0
+$Comp
+L R R1
+U 1 1 58B570FF
+P 4050 1250
+F 0 "R1" V 4130 1250 50  0000 C CNN
+F 1 "39k" V 4050 1250 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" V 3980 1250 50  0001 C CNN
+F 3 "" H 4050 1250 50  0000 C CNN
+	1    4050 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R2
+U 1 1 58B57434
+P 4050 1550
+F 0 "R2" V 4130 1550 50  0000 C CNN
+F 1 "120k" V 4050 1550 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" V 3980 1550 50  0001 C CNN
+F 3 "" H 4050 1550 50  0000 C CNN
+	1    4050 1550
+	1    0    0    -1  
+$EndComp
+Text Label 4050 1100 0    60   ~ 0
+BATT_IN
+$Comp
+L GND #PWR04
+U 1 1 58B578F5
+P 4050 1700
+F 0 "#PWR04" H 4050 1450 50  0001 C CNN
+F 1 "GND" H 4050 1550 50  0000 C CNN
+F 2 "" H 4050 1700 50  0000 C CNN
+F 3 "" H 4050 1700 50  0000 C CNN
+	1    4050 1700
+	1    0    0    -1  
+$EndComp
+Text Label 4150 1400 0    60   ~ 0
+ADC_0
+$Comp
+L GND #PWR05
+U 1 1 58B59888
+P 9850 3950
+F 0 "#PWR05" H 9850 3700 50  0001 C CNN
+F 1 "GND" H 9850 3800 50  0000 C CNN
+F 2 "" H 9850 3950 50  0000 C CNN
+F 3 "" H 9850 3950 50  0000 C CNN
+	1    9850 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C1
+U 1 1 58B598FF
+P 9850 3800
+F 0 "C1" H 9875 3900 50  0000 L CNN
+F 1 "10u" H 9875 3700 50  0000 L CNN
+F 2 "Capacitors_SMD:C_1206_HandSoldering" H 9888 3650 50  0001 C CNN
+F 3 "" H 9850 3800 50  0000 C CNN
+	1    9850 3800
+	1    0    0    -1  
+$EndComp
+NoConn ~ 5450 4200
+$Comp
+L ARDUPROMINI uP1
+U 1 1 58C15555
+P 4800 4500
+F 0 "uP1" H 4750 4950 60  0000 C CNN
+F 1 "ARDUPROMINI" H 4750 5050 60  0000 C CNN
+F 2 "MyLib:ArduProMini_only_sideholes" H 5400 6100 60  0001 C CNN
+F 3 "" H 5400 6100 60  0000 C CNN
+	1    4800 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L USB_Charge_circuit U2
+U 1 1 58CA91F7
+P 1950 3700
+F 0 "U2" H 1950 3700 60  0000 C CNN
+F 1 "USB_Charge_circuit" H 1950 3700 60  0000 C CNN
+F 2 "MyLib:USB_charge_circuit" H 1950 3700 60  0001 C CNN
+F 3 "" H 1950 3700 60  0000 C CNN
+	1    1950 3700
+	1    0    0    -1  
+$EndComp
+Text Label 2700 3600 0    60   ~ 0
+BATT_IN
+Text Label 2700 4300 0    60   ~ 0
+GND
+$Comp
+L TPS61200_Tiny_Module U3
+U 1 1 58D3A974
+P 1900 5700
+F 0 "U3" H 2700 5650 60  0000 C CNN
+F 1 "TPS61200_Tiny_Module" H 2300 6300 60  0000 C CNN
+F 2 "MyLib:TPS61200_Tiny_Module" H 1900 5700 60  0001 C CNN
+F 3 "" H 1900 5700 60  0001 C CNN
+	1    1900 5700
+	1    0    0    -1  
+$EndComp
+Text Label 1700 5400 2    60   ~ 0
+GND
+Text Label 1700 5500 2    60   ~ 0
+BATT_IN
+Text Label 1700 5300 2    60   ~ 0
+PWR_OUT
+Text Label 1700 5600 2    60   ~ 0
+PWR_EN
+Text Label 7050 3850 0    60   ~ 0
+Lora_DI05
+Text Label 8750 3350 0    60   ~ 0
+Lora_DI01
+Text Label 8750 3450 0    60   ~ 0
+Lora_DI00
+NoConn ~ 8750 3650
+NoConn ~ 8750 3750
+Text Label 4100 4600 2    60   ~ 0
+Lora_DI00
+Text Label 4100 4800 2    60   ~ 0
+Lora_DI01
+Text Label 4100 5300 2    60   ~ 0
+Lora_RESET
+Text Label 5450 4300 0    60   ~ 0
+GND
+$Comp
+L CONN_01X05 J1
+U 1 1 58DCE74B
+P 2700 1300
+F 0 "J1" H 2700 1600 50  0000 C CNN
+F 1 "CONN_01X05" V 2800 1300 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x05_Pitch2.54mm" H 2700 1300 50  0001 C CNN
+F 3 "" H 2700 1300 50  0001 C CNN
+	1    2700 1300
+	1    0    0    -1  
+$EndComp
+Text Label 2500 1100 2    60   ~ 0
+PWR_OUT
+Text Label 2500 1200 2    60   ~ 0
+GND
+Text Label 2500 1300 2    60   ~ 0
+I2C_SCL
+Text Label 2500 1400 2    60   ~ 0
+I2C_SDA
+Text Label 4100 4900 2    60   ~ 0
+I2C_SCL
+Text Label 4100 5000 2    60   ~ 0
+I2C_SDA
+$Comp
+L CONN_01X02 J2
+U 1 1 58E3861C
+P 5800 1500
+F 0 "J2" H 5800 1650 50  0000 C CNN
+F 1 "CONN_01X02" V 5900 1500 50  0000 C CNN
+F 2 "Connectors:PINHEAD1-2" H 5800 1500 50  0001 C CNN
+F 3 "" H 5800 1500 50  0001 C CNN
+	1    5800 1500
+	1    0    0    -1  
+$EndComp
+Text Label 5600 1450 2    60   ~ 0
+Buzzer
+Text Label 5600 1550 2    60   ~ 0
+GND
+Text Label 5450 4600 0    60   ~ 0
+Buzzer
+$Comp
+L CONN_01X02 J3
+U 1 1 58ECD94D
+P 1400 750
+F 0 "J3" H 1400 900 50  0000 C CNN
+F 1 "CONN_01X02" V 1500 750 50  0000 C CNN
+F 2 "Connectors:PINHEAD1-2" H 1400 750 50  0001 C CNN
+F 3 "" H 1400 750 50  0001 C CNN
+	1    1400 750 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L CONN_01X02 J4
+U 1 1 58ECE961
+P 3500 4050
+F 0 "J4" H 3500 4200 50  0000 C CNN
+F 1 "CONN_01X02" V 3600 4050 50  0000 C CNN
+F 2 "Connectors:PINHEAD1-2" H 3500 4050 50  0001 C CNN
+F 3 "" H 3500 4050 50  0001 C CNN
+	1    3500 4050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L RFM95 U1
+U 1 1 58F1845A
+P 8200 3600
+F 0 "U1" H 8200 3150 60  0000 C CNN
+F 1 "RFM95" H 8200 4050 60  0000 C CNN
+F 2 "MyLib:RFM95" H 8200 3700 60  0001 C CNN
+F 3 "" H 8200 3700 60  0001 C CNN
+	1    8200 3600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7600 3950 7600 4350
+Wire Wire Line
+	7550 3950 7650 3950
+Wire Wire Line
+	7650 3250 7550 3250
+Wire Wire Line
+	7550 3250 7550 3950
+Connection ~ 7600 3950
+Wire Wire Line
+	8750 3850 8850 3850
+Wire Wire Line
+	7600 4300 8850 4300
+Connection ~ 7600 4300
+Wire Wire Line
+	7050 3350 7650 3350
+Wire Wire Line
+	7050 3450 7650 3450
+Wire Wire Line
+	7050 3550 7650 3550
+Wire Wire Line
+	7050 3750 7650 3750
+Wire Wire Line
+	8750 3550 9850 3550
+Wire Wire Line
+	4100 4500 3500 4500
+Wire Wire Line
+	3500 4500 3500 6100
+Wire Wire Line
+	1500 1200 1150 1200
+Wire Wire Line
+	1150 1200 1150 1350
+Wire Wire Line
+	4150 1400 4050 1400
+Wire Wire Line
+	6750 3650 7650 3650
+Wire Wire Line
+	9850 3050 9850 3650
+Connection ~ 9850 3550
+Wire Notes Line
+	3500 650  3500 2350
+Wire Notes Line
+	2000 700  2000 2300
+Wire Wire Line
+	1250 3600 1050 3600
+Wire Wire Line
+	1250 4300 1050 4300
+Wire Wire Line
+	7650 3850 7050 3850
+Wire Wire Line
+	6750 5300 5450 5300
+Wire Wire Line
+	6750 5300 6750 3650
+Wire Wire Line
+	1350 950  1350 1100
+Wire Wire Line
+	1350 1100 750  1100
+Wire Wire Line
+	1450 950  1450 1100
+Wire Wire Line
+	1450 1100 1500 1100
+Wire Wire Line
+	4100 4700 3550 4700
+Wire Wire Line
+	3550 4700 3550 4250
+Wire Wire Line
+	3450 4250 3450 4850
+Wire Wire Line
+	8750 3950 9100 3950
+Wire Wire Line
+	8850 4300 8850 3850
+Wire Wire Line
+	9100 4050 8850 4050
+Connection ~ 8850 4050
+Wire Notes Line
+	4800 700  4800 2250
+Wire Wire Line
+	3450 4850 3500 4850
+Connection ~ 3500 4850
+$EndSCHEMATC
