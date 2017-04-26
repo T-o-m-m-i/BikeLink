@@ -21,12 +21,22 @@ void loop() {
   Serial.println(counter);
 
   // send packet
+
+  if (counter == 4){
+  LoRa.beginPacket();
+  LoRa.print("TESTIVIESTI");
+  LoRa.endPacket();
+  }
+  else{
   LoRa.beginPacket();
   LoRa.print("hello ");
   LoRa.print(counter);
   LoRa.endPacket();
+  }
+
 
   counter++;
 
   delay(5000);
 }
+
