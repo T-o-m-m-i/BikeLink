@@ -1,8 +1,6 @@
 #include "Libs/RHReliableDatagram.h"
 #include "Libs/RH_RF95.h"
-#include <ShiftDisplay.h>
 #include <SPI.h>
-#include "Libs/ShiftRegister74HC595.h"
 
 #define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
@@ -20,11 +18,6 @@
 uint8_t * digitalValues;
 //char const handShakeCode[] = "6d950a629f27ee411602f1640a8492b1";
 
-// create shift register object (number of shift registers, data pin, clock pin, latch pin)
-//ShiftRegister74HC595 led (3, 5, 6, 7);
-
-ShiftDisplay led(LATCH_PIN, SCL_PIN, SDA_PIN, COMMON_ANODE, 3);
-
 struct dataStruct
 {
 	bool alarmState;
@@ -33,8 +26,10 @@ struct dataStruct
 } SensorReadings;
 
 uint16_t RX_Voltage;
+uint8_t rssiValue;
 volatile uint8_t buttonState = 0;
 volatile boolean alarmState = false;
+
 bool TX_responded_OK = false;
 
 // Instance of the radio driver
@@ -43,42 +38,44 @@ RH_RF95 driver;
 // Class to manage message delivery and receipt, using the driver declared above
 RHReliableDatagram manager(driver, SERVER_ADDRESS);
 
-// Run this code if Button Interrupt was triggered
 void buttonInterrupt(void)
 {
-	detachInterrupt(digitalPinToInterrupt(BTN_INTERRUPT_PIN));
-	buttonState++;
-	if( buttonState % 4 == 0 )
-		buttonState = 0;
-
+	static unsigned long last_interrupt_time = 0;
+	unsigned long interrupt_time = millis();
+	// If interrupts come faster than 200ms, assume it's a bounce and ignore
+	if (interrupt_time - last_interrupt_time > 200)
+	{
+		buttonState++;
+		if( buttonState % 4 == 0 )
+				buttonState = 0;
+	}
+	last_interrupt_time = interrupt_time;
 	Serial.print("Button: ");
 	Serial.print(buttonState);
 	Serial.println("");
-	delay(100);
-	attachInterrupt(digitalPinToInterrupt(BTN_INTERRUPT_PIN), buttonInterrupt, RISING);
 }
 
 void setup()
 {
-	//ADC0
+	// ADC0
 	pinMode(A0, INPUT);
 
-	//Button pin
+	// Button pin
 	pinMode(3,INPUT_PULLUP);
 
-	//Buzzer pin
+	// Buzzer pin
 	pinMode(BUZZER_PIN, OUTPUT);
 
-	//Display pins
-	/*pinMode(LATCH_PIN, OUTPUT);
+	// Display pins
+	pinMode(LATCH_PIN, OUTPUT);
 	pinMode(SCL_PIN, OUTPUT);
-	pinMode(SDA_PIN, OUTPUT);*/
+	pinMode(SDA_PIN, OUTPUT);
 
-	//Reset pin
+	// Reset pin
 	pinMode(RFM95_RST, OUTPUT);
 	digitalWrite(RFM95_RST, HIGH);
 
-	//Manual reset the radio
+	// Manual reset the radio
 	digitalWrite(RFM95_RST, LOW);
 	delay(10);
 	digitalWrite(RFM95_RST, HIGH);
@@ -114,11 +111,11 @@ void setup()
 	attachInterrupt(digitalPinToInterrupt(BTN_INTERRUPT_PIN), buttonInterrupt, RISING);
 
 
-	// allocates the specified number of bytes and initializes them to zero
+	// Allocates the specified number of bytes and initializes them to zero
 	digitalValues = (uint8_t *)malloc(3 * sizeof(uint8_t));
 	memset(digitalValues, 0, 3 * sizeof(uint8_t));
 
-
+	rssiValue = 0;
 }
 
 uint8_t data[] = "And hello back!";
@@ -147,8 +144,11 @@ void loop()
 			Serial.print(": ");
 			Serial.println(SensorReadings.alarmState);
 
+			// Set the alarmState ON permanently
 			if(!alarmState)
 				alarmState = SensorReadings.alarmState;
+
+			rssiValue = driver.lastRssi();
 
 			//while(!manager.sendtoWait(data, sizeof(data), from))
 			//{
@@ -178,33 +178,34 @@ void updateDisplay(uint8_t state)
 	switch(state)
 	{
 		case 0:{
-				led.print(1000, 1);
-				led.print(1000, 2);
-				led.print(1000, 3);
-				led.print(1000, 4);
-				led.print(1000, 5);
-				led.print(1000, "001", ALIGN_RIGHT);
-
-
 				//Display off
-				//display(0);
-				//led.print(1000, "941");
+				displayOff();
 				break;}
 		case 1:{
-				//Display off
-				//display(1);
-				//long raw = SensorReadings.TX_Voltage;
-				//long voltage = map(raw, 0, 1020, 0, 420);
-				led.set("G");
-				led.show(1000);
+				//Display RSSI
+				displayNumber(rssiValue, false);
+				Serial.println(rssiValue);
 				break;}
 		case 2:{
-				//Display off
-				//display(1);
+				//Display TX voltage
+				long raw = SensorReadings.TX_Voltage;
+				int voltage = (int)map(raw, 0, 1023, 0, 432);
+				displayNumber(voltage, false);
+				Serial.println(voltage);
+
+				break;}
+		case 3:{
+				//Display RX voltage
 				readVoltage();
-				//long raw = RX_Voltage;
-				//long voltage = map(raw, 0, 1020, 0, 420);
-				digitalWrite(LATCH_PIN, LOW);
+				int voltage = (int)map(RX_Voltage, 0, 1023, 0, 432);
+				displayNumber(voltage, false);
+				Serial.println(voltage);
+				break;}
+
+		default:
+				//Display off
+				//display(0);
+			/*	digitalWrite(LATCH_PIN, LOW);
 				int byte;
 				digitalValues[0]=B11111100;
 				digitalValues[1]=B01100000;
@@ -215,27 +216,70 @@ void updateDisplay(uint8_t state)
 					shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~digitalValues[byte]);
 				}
 				digitalWrite(LATCH_PIN, HIGH);
-				digitalWrite(LATCH_PIN, LOW);
-				break;}
-		default:
-				//Display off
-				//display(0);
+				digitalWrite(LATCH_PIN, LOW);*/
 
 				break;
 
 	}
-	//attachInterrupt(digitalPinToInterrupt(BTN_INTERRUPT_PIN), buttonInterrupt, RISING);
 }
 
+int LED_SEG_TAB[]={
+  0xfc,0x60,0xda,0xf2,0x66,0xb6,0xbe,0xe0,0xfe,0xf6,0x01,0xee,0x3e,0x1a,0x7a,0x9e,0x8e,0x01,0x00};
+//0     1    2     3    4    5    6    7    8    9   dp   .    a    b    c    d    e    f   off
+
+void displayNumber(int value, boolean leadingZero)
+{
+	int a,b,c;
+	a = value / 100;
+	value = value % 100;
+	b = value / 10;
+	value = value % 10;
+	c = value;
+
+	if (leadingZero==false) // Remove leading zeros
+	{
+		if (a==0 && b>0)
+		{
+			a = 18;
+		}
+		if (a==0 && b==0 && c>0)
+		{
+			a = 18;
+			b = 18;
+		}
+		if (a==0 && b==0 && c==0)
+		{
+			a = 18;
+			b = 18;
+			c = 18;
+		}
+	}
+
+	digitalWrite(LATCH_PIN, LOW);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~LED_SEG_TAB[c]);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~LED_SEG_TAB[b]);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~LED_SEG_TAB[a]);
+	digitalWrite(LATCH_PIN, HIGH);
+}
+// Turns off all the segments
+void displayOff()
+{
+	digitalWrite(LATCH_PIN, LOW);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
+	digitalWrite(LATCH_PIN, HIGH);
+}
+// Alarm sound
 void alarmSound(void)
 {
-	// play a note on pin 7 for 500 ms:
+	// Play a note on BUZZER_PIN for 500 ms:
 	tone(BUZZER_PIN, 494, 500);
 	delay(500);
 	tone(BUZZER_PIN, 294, 500);
 	delay(500);
 
-	// turn off tone function for pin 7:
+	// Turn off tone function for BUZZER_PIN:
 	noTone(BUZZER_PIN);
 }
 

@@ -58,6 +58,8 @@ void activityInterrupt(void)
 
 	//Set WDT faster
 	maxSleepIterations = 1;
+
+	//Set Acc to Idle? -> 0.1uA
 }
 
 // The Watchdog Time-out Interrupt
@@ -276,9 +278,9 @@ void handShake()
 void accSetup()
 {
 	adxl.powerOn();
-	//adxl.set_bw(ADXL345_BW_6);
+	adxl.set_bw(ADXL345_BW_6);
 	adxl.setLowPower(0);
-	adxl.set_bw(ADXL345_BW_25);
+	//adxl.set_bw(ADXL345_BW_25);
 	//adxl.setActivityAc(0);
 	adxl.setInterruptLevelBit(0);
 
