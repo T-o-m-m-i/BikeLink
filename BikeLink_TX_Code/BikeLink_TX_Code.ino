@@ -70,35 +70,54 @@ ISR(WDT_vect)
 
 void setup()
 {
+	//To save power
+	pinMode(9,OUTPUT);	digitalWrite(9,LOW);
+	pinMode(8,OUTPUT);	digitalWrite(8,LOW);
+	pinMode(7,OUTPUT);	digitalWrite(7,LOW);
+	pinMode(6,OUTPUT);	digitalWrite(6,LOW);
+	pinMode(5,OUTPUT);	digitalWrite(5,LOW);
+	pinMode(4,OUTPUT);	digitalWrite(4,LOW);
+
+	pinMode(1,OUTPUT);	digitalWrite(1,LOW);
+	pinMode(0,OUTPUT);	digitalWrite(0,LOW);
+
+	pinMode(13,OUTPUT);	digitalWrite(13,LOW);
+	pinMode(15,OUTPUT);	digitalWrite(15,LOW);
+	pinMode(16,OUTPUT);	digitalWrite(16,LOW);
+	pinMode(17,OUTPUT);	digitalWrite(17,LOW);
+	pinMode(20,OUTPUT);	digitalWrite(20,LOW);
+	pinMode(21,OUTPUT);	digitalWrite(21,LOW);
+
+
+
+
 	SensorReadings.TX_Voltage = 0;
 	SensorReadings.alarmState = false;
 
-	//Interrupt pin
+	// Interrupt pin
 	pinMode(ACC_INTERRUPT_PIN, INPUT);
-	//ADC0
+	// ADC0
 	pinMode(BATTERY_PIN, INPUT);
-	//Reset pin
+	// Reset pin
 	pinMode(RFM95_RST, OUTPUT);
 	digitalWrite(RFM95_RST, HIGH);
 
-	// manual reset
+	// Manual reset
 	digitalWrite(RFM95_RST, LOW);
 	delay(10);
 	digitalWrite(RFM95_RST, HIGH);
 
 	delay(10);
 
-	// Rocket Scream Mini Ultra Pro with the RFM95W only:
-	// Ensure serial flash is not interfering with radio communication on SPI bus
-	//  pinMode(4, OUTPUT);
-	//  digitalWrite(4, HIGH);
 
 	Serial.begin(9600);
 	while (!Serial) ; // Wait for serial port to be available
 
 	// Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 	if (!manager.init())
-		Serial.println("init failed");
+	{
+		//Serial.println("init failed");
+	}
 
 	if (!driver.setFrequency(RF95_FREQ)) {
 		while (1);
@@ -168,10 +187,7 @@ void loop()
 			// Reset the number of sleep iterations.
 			sleepIterations = 0;
 
-			Serial.println("TX In loop() ");
-
 			readVoltage();
-
 
 			//int x,y,z;
 			//adxl.readAccel(&x, &y, &z);
@@ -187,24 +203,25 @@ void loop()
 			//activity
 			if(adxl.triggered(interrupts, ADXL345_ACTIVITY))
 			{
-				Serial.println("activity");
+				//Serial.println("activity");
 				//add code here to do when activity is sensed
 			}
 
 			//inactivity
 			if(adxl.triggered(interrupts, ADXL345_INACTIVITY))
 			{
-				Serial.println("inactivity");
+				//Serial.println("inactivity");
 				//add code here to do when inactivity is sensed
 			}
 
 			sendValues();
 		}
+		sleep();
 	}
 }
 
 // Put the Arduino to sleep.
-void sleep()
+void sleep(void)
 {
 	Serial.println("TX Sleepy Time Now");
 	Serial.flush();
@@ -212,12 +229,17 @@ void sleep()
 	//Shut down the radio
 	driver.sleep();
 
+	power_all_disable();
+	//power_spi_disable();
+	//power_usart0_disable();
+	//power_twi_disable();
+
 	// Set sleep to 'full power down'.  Only external interrupts or
 	// the watchdog timer can wake the CPU!
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 
 	// Turn off the ADC while asleep.
-	power_adc_disable();
+		//power_adc_disable();
 
 	// Enable sleep and enter sleep mode.
 	sleep_mode();
@@ -231,28 +253,30 @@ void sleep()
 
 	//Wake up the radio
 	driver.setModeIdle();
+	Serial.println("TX Out of sleep");
 }
-void sendValues()
+
+void sendValues(void)
 {
 	uint8_t len = sizeof(SensorReadings);
 
 	//Load message into data-array
 	memcpy (buf, &SensorReadings, len);
 
-	if(manager.sendtoWait(buf, len, SERVER_ADDRESS))
-		Serial.println("TX Succesfull 'sendtoWait'");
-	else
-		Serial.println("TX Failed 'sendtoWait'");
+	if(manager.sendtoWait(buf, len, SERVER_ADDRESS)){}
+		//Serial.println("TX Succesfull 'sendtoWait'");
+	else{}
+		//Serial.println("TX Failed 'sendtoWait'");
 
-	sleep();
+	//sleep();
 }
 
-void readVoltage()
+void readVoltage(void)
 {
 	SensorReadings.TX_Voltage = analogRead(BATTERY_PIN);
 }
 
-void handShake()
+void handShake(void)
 {
 	adxl.getInterruptSource();
 
@@ -269,13 +293,12 @@ void handShake()
 		{
 			Serial.println("TX Failed 'sendtoWait'");
 		}
-		Serial.println("TX Succesfull 'sendtoWait'");
+		//Serial.println("TX Succesfull 'sendtoWait'");
 		RX_responded_OK = true;
 	}
-	sleep();
 }
 
-void accSetup()
+void accSetup(void)
 {
 	adxl.powerOn();
 	adxl.set_bw(ADXL345_BW_6);

@@ -28,7 +28,10 @@ struct dataStruct
 uint16_t RX_Voltage;
 uint8_t rssiValue;
 volatile uint8_t buttonState = 0;
+volatile uint8_t lastButtonState = 0;
 volatile boolean alarmState = false;
+volatile boolean buzzerState = true;
+volatile boolean displayUpdated = false;
 
 bool TX_responded_OK = false;
 
@@ -40,6 +43,7 @@ RHReliableDatagram manager(driver, SERVER_ADDRESS);
 
 void buttonInterrupt(void)
 {
+	cli();
 	static unsigned long last_interrupt_time = 0;
 	unsigned long interrupt_time = millis();
 	// If interrupts come faster than 200ms, assume it's a bounce and ignore
@@ -47,12 +51,20 @@ void buttonInterrupt(void)
 	{
 		buttonState++;
 		if( buttonState % 4 == 0 )
-				buttonState = 0;
+			buttonState = 0;
+
+		displayUpdated = false;
+
+		if(alarmState)
+			buzzerState = false;
+
 	}
 	last_interrupt_time = interrupt_time;
-	Serial.print("Button: ");
-	Serial.print(buttonState);
-	Serial.println("");
+
+	//Serial.print("Button: ");
+	//Serial.print(buttonState);
+	//Serial.println("");
+	sei();
 }
 
 void setup()
@@ -122,6 +134,8 @@ uint8_t data[] = "And hello back!";
 // Dont put this on the stack:
 uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 
+static unsigned long last_time = 0;
+
 void loop()
 {
 	// Don't put this on the stack:
@@ -150,6 +164,8 @@ void loop()
 
 			rssiValue = driver.lastRssi();
 
+			flashDisplay();
+			displayUpdated = false;
 			//while(!manager.sendtoWait(data, sizeof(data), from))
 			//{
 			//	Serial.println("RX Failed 'sendtoWait'");
@@ -163,13 +179,29 @@ void loop()
 		}
 	}
 
-	if(alarmState)
+	if(alarmState && buzzerState)
 	{
 		//Buzzzz
 		alarmSound();
 	}
 
-	updateDisplay(buttonState);
+	unsigned long receive_time = millis();
+
+	if(!displayUpdated)
+		updateDisplay(buttonState);
+
+
+
+	if (receive_time - last_time > 10000)
+	{
+		// Set the alarmState ON permanently
+		if(!alarmState)
+			alarmState = true;
+
+		rssiValue = 0;
+		Serial.println("TX silent too long!");
+	}
+	last_time = receive_time;
 
 }
 
@@ -180,26 +212,28 @@ void updateDisplay(uint8_t state)
 		case 0:{
 				//Display off
 				displayOff();
+				displayUpdated = true;
 				break;}
 		case 1:{
 				//Display RSSI
 				displayNumber(rssiValue, false);
-				Serial.println(rssiValue);
+				//Serial.println(rssiValue);
+				displayUpdated = true;
 				break;}
 		case 2:{
 				//Display TX voltage
 				long raw = SensorReadings.TX_Voltage;
 				int voltage = (int)map(raw, 0, 1023, 0, 432);
 				displayNumber(voltage, false);
-				Serial.println(voltage);
-
+				//Serial.println(voltage);
+				displayUpdated = true;
 				break;}
 		case 3:{
 				//Display RX voltage
 				readVoltage();
 				int voltage = (int)map(RX_Voltage, 0, 1023, 0, 432);
 				displayNumber(voltage, false);
-				Serial.println(voltage);
+				//Serial.println(voltage);
 				break;}
 
 		default:
@@ -262,8 +296,25 @@ void displayNumber(int value, boolean leadingZero)
 	digitalWrite(LATCH_PIN, HIGH);
 }
 // Turns off all the segments
-void displayOff()
+void displayOff(void)
 {
+	digitalWrite(LATCH_PIN, LOW);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
+	digitalWrite(LATCH_PIN, HIGH);
+}
+
+void flashDisplay(void)
+{
+	digitalWrite(LATCH_PIN, LOW);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, 0);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, 0);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, 0);
+	digitalWrite(LATCH_PIN, HIGH);
+
+	delay(10);
+
 	digitalWrite(LATCH_PIN, LOW);
 	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
 	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~0);
@@ -283,7 +334,7 @@ void alarmSound(void)
 	noTone(BUZZER_PIN);
 }
 
-void readVoltage()
+void readVoltage(void)
 {
 	RX_Voltage = analogRead(BATTERY_PIN);
 }
