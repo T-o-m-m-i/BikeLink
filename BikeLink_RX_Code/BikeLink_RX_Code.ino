@@ -60,10 +60,6 @@ void buttonInterrupt(void)
 
 	}
 	last_interrupt_time = interrupt_time;
-
-	//Serial.print("Button: ");
-	//Serial.print(buttonState);
-	//Serial.println("");
 	sei();
 }
 
@@ -96,7 +92,7 @@ void setup()
 	Serial.begin(9600);
 	while (!Serial) ; // Wait for serial port to be available
 
-	// Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+	// Defaults after init are 868.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 	if (!manager.init())
 		Serial.println("init failed");
 
@@ -165,6 +161,7 @@ void loop()
 			rssiValue = driver.lastRssi();
 
 			flashDisplay();
+			piipSound();
 			displayUpdated = false;
 			//while(!manager.sendtoWait(data, sizeof(data), from))
 			//{
@@ -235,7 +232,6 @@ void updateDisplay(uint8_t state)
 				displayNumber(voltage, false);
 				//Serial.println(voltage);
 				break;}
-
 		default:
 				//Display off
 				//display(0);
@@ -290,9 +286,9 @@ void displayNumber(int value, boolean leadingZero)
 	}
 
 	digitalWrite(LATCH_PIN, LOW);
-	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~LED_SEG_TAB[c]);
-	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~LED_SEG_TAB[b]);
-	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~LED_SEG_TAB[a]);
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~(LED_SEG_TAB[c]|alarmState));
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~(LED_SEG_TAB[b]));
+	shiftOut(SDA_PIN, SCL_PIN, LSBFIRST, ~(LED_SEG_TAB[a]));
 	digitalWrite(LATCH_PIN, HIGH);
 }
 // Turns off all the segments
@@ -329,6 +325,17 @@ void alarmSound(void)
 	delay(500);
 	tone(BUZZER_PIN, 294, 500);
 	delay(500);
+
+	// Turn off tone function for BUZZER_PIN:
+	noTone(BUZZER_PIN);
+}
+
+// Piip sound
+void piipSound(void)
+{
+	// Play a note on BUZZER_PIN for 500 ms:
+	tone(BUZZER_PIN, 694, 100);
+	delay(100);
 
 	// Turn off tone function for BUZZER_PIN:
 	noTone(BUZZER_PIN);
