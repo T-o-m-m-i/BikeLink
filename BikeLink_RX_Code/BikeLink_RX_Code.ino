@@ -15,6 +15,8 @@
 #define SCL_PIN 6
 #define SDA_PIN 5
 
+#define SILENT_TIME 30000
+
 uint8_t * digitalValues;
 //char const handShakeCode[] = "6d950a629f27ee411602f1640a8492b1";
 
@@ -26,7 +28,7 @@ struct dataStruct
 } SensorReadings;
 
 uint16_t RX_Voltage;
-uint8_t rssiValue;
+uint8_t rssiValue = 0;
 volatile uint8_t buttonState = 0;
 volatile uint8_t lastButtonState = 0;
 volatile boolean alarmState = false;
@@ -100,9 +102,14 @@ void setup()
 		while (1);
 	}
 
+	if (!driver.setModemConfig(RH_RF95::Bw125Cr48Sf4096)) {
+		Serial.println("modem config failed");
+	}
+
 	// The default transmitter power is 13dBm, using PA_BOOST.
 	// If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
 	// you can set transmitter powers from 5 to 23 dBm:
+	//driver.setModemConfig(RH_RF95::Bw31_25Cr48Sf512);
 	driver.setTxPower(17, false);
 	// If you are using Modtronix inAir4 or inAir9,or any other module which uses the
 	// transmitter RFO pins and not the PA_BOOST pins
@@ -114,7 +121,7 @@ void setup()
 	// the CAD timeout to non-zero:
 	//driver.setCADTimeout(1000);
 	manager.setRetries(5);
-	manager.setTimeout(500);
+	manager.setTimeout(1000);
 
 	attachInterrupt(digitalPinToInterrupt(BTN_INTERRUPT_PIN), buttonInterrupt, RISING);
 
@@ -130,7 +137,8 @@ uint8_t data[] = "And hello back!";
 // Dont put this on the stack:
 uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 
-static unsigned long last_time = 0;
+//static unsigned long loop_time = 0;
+static unsigned long receive_time = 0;
 
 void loop()
 {
@@ -139,20 +147,23 @@ void loop()
 	uint8_t len = sizeof(buf);
 	uint8_t from = 0x00;
 
+
+
 	if (manager.available())
 	{
 		Serial.println("RX manager.available()");
 		// Wait for a message addressed to us from the client
 		if (manager.recvfromAck(buf, &len, &from))
 		{
+			receive_time = millis();
 			memcpy(&SensorReadings, buf, sizeof(SensorReadings));
 
-			Serial.print("RX got message from : 0x");
-			Serial.print(from, HEX);
-			Serial.print(": ");
-			Serial.print(SensorReadings.TX_Voltage);
-			Serial.print(": ");
-			Serial.println(SensorReadings.alarmState);
+			//Serial.print("RX got message from : 0x");
+			//Serial.print(from, HEX);
+			//Serial.print(": ");
+			//Serial.print(SensorReadings.TX_Voltage);
+			//Serial.print(": ");
+			//Serial.println(SensorReadings.alarmState);
 
 			// Set the alarmState ON permanently
 			if(!alarmState)
@@ -161,7 +172,7 @@ void loop()
 			rssiValue = driver.lastRssi();
 
 			flashDisplay();
-			piipSound();
+			//piipSound();
 			displayUpdated = false;
 			//while(!manager.sendtoWait(data, sizeof(data), from))
 			//{
@@ -182,23 +193,20 @@ void loop()
 		alarmSound();
 	}
 
-	unsigned long receive_time = millis();
 
 	if(!displayUpdated)
 		updateDisplay(buttonState);
 
 
-
-	if (receive_time - last_time > 10000)
+	if (millis() - receive_time > SILENT_TIME)
 	{
 		// Set the alarmState ON permanently
 		if(!alarmState)
 			alarmState = true;
 
 		rssiValue = 0;
-		Serial.println("TX silent too long!");
+		//Serial.println("TX silent too long!");
 	}
-	last_time = receive_time;
 
 }
 
@@ -334,7 +342,7 @@ void alarmSound(void)
 void piipSound(void)
 {
 	// Play a note on BUZZER_PIN for 500 ms:
-	tone(BUZZER_PIN, 694, 100);
+	tone(BUZZER_PIN, 694, 50);
 	delay(100);
 
 	// Turn off tone function for BUZZER_PIN:

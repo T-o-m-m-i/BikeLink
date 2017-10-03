@@ -20,7 +20,7 @@ volatile boolean activity = false;
 volatile boolean activited = false;
 volatile bool watchdogActivated = false;
 uint8_t sleepIterations = 0;
-volatile uint8_t maxSleepIterations = 3;
+volatile uint8_t maxSleepIterations = 10;
 
 //char const handShakeCode[] = "6d950a629f27ee411602f1640a8492b1";
 
@@ -103,7 +103,7 @@ void setup()
 	SensorReadings.TX_Voltage = 0;
 	SensorReadings.alarmState = false;
 
-	// Interrupt pin
+	// Interrupt pin. From accelerometer.
 	pinMode(ACC_INTERRUPT_PIN, INPUT);
 	// ADC0
 	pinMode(BATTERY_PIN, INPUT);
@@ -132,9 +132,14 @@ void setup()
 		while (1);
 	}
 
+	if (!driver.setModemConfig(RH_RF95::Bw125Cr48Sf4096)) {
+			Serial.println("modem config failed");
+	}
 	// If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
 	// you can set transmitter powers from 5 to 23 dBm:
+	//driver.setModemConfig(RH_RF95::Bw31_25Cr48Sf512);
 	driver.setTxPower(17, false);
+
 
 	// You can optionally require this module to wait until Channel Activity
 	// Detection shows no activity on the channel before transmitting by setting
@@ -142,7 +147,7 @@ void setup()
 	//driver.setCADTimeout(1000);
 
 	manager.setRetries(5);
-	manager.setTimeout(500);
+	manager.setTimeout(1000);
 
 
 	// Setup the watchdog timer to run an interrupt which
@@ -177,8 +182,8 @@ void setup()
 	//  1         0      0        0            512K (524288) cycles 4.0 s
 	//  1         0      0        1            1024K (1048576) cycles 8.0 s
 
-	// Set Watchdog Clock Prescaler bits to a value of 8 seconds.
-	WDTCSR = (1<<WDP0) | (1<<WDP3);
+	// Set Watchdog Clock Prescaler bits to a value of 1 seconds.
+	WDTCSR = (1<<WDP3);// | (1<<WDP1);
 
 	// Enable watchdog as interrupt only (no reset).
 	WDTCSR |= (1<<WDIE);
@@ -192,7 +197,7 @@ void setup()
 	delay(100);
 	attachInterrupt(digitalPinToInterrupt(ACC_INTERRUPT_PIN), activityInterrupt, RISING);
 
-	handShake();
+	//handShake();
 }
 
 void loop()
@@ -206,6 +211,9 @@ void loop()
 		// If WDT triggered maxSleepIterations times OR first time activity triggered
 		if((sleepIterations >= maxSleepIterations) || (activity && !activited))
 		{
+			//Wake up the radio
+			driver.setModeIdle();
+
 			// Set the first time activated flag
 			if(activity)
 				activited = true;
@@ -257,6 +265,7 @@ void sleep(void)
 
 	//Shut down the radio
 	driver.sleep();
+	delay(10);
 
 	power_all_disable();
 	//power_spi_disable();
@@ -281,14 +290,16 @@ void sleep(void)
 	power_all_enable();
 
 	//Wake up the radio
-	driver.setModeIdle();
+	//driver.setModeIdle();
 	Serial.println("TX Out of sleep");
 }
 
 void sendValues(void)
 {
+	noInterrupts();
 	uint8_t len = sizeof(SensorReadings);
-
+	//Serial.print("SensorReadings: ");
+	//Serial.println(len);
 	//Load message into data-array
 	memcpy (buf, &SensorReadings, len);
 
@@ -300,6 +311,7 @@ void sendValues(void)
 	{
 		Serial.println("TX Failed 'sendtoWait'");
 	}
+	interrupts();
 }
 
 void readVoltage(void)
