@@ -32,7 +32,11 @@
 .cproject
 .ino.cpp
 .project
+.bak
+BikeLink-TX-PCB/LoRa-BikeLink-TX.bak
+BikeLink-RX-PCB/LoRa-BikeLink-RX.bak
 
 # Folders
 Release/
 .settings/
+
